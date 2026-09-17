@@ -1,71 +1,79 @@
 # Laptop Assistant
 
-A lightweight local assistant that uses the laptop's webcam, microphone and speaker for voice and visual interaction.
+A lightweight local voice and vision assistant that treats a laptop as a simple smart embodiment:
 
-The user can show an object to the webcam, press Space and ask a question. The system captures the current camera view, converts the spoken question to text, processes the image and question locally, and gives a spoken response.
+- **Webcam** as eyes
+- **Microphone** as ears
+- **Speaker** as voice
 
-## How it works
+The assistant can listen to spoken questions, answer general questions, use the webcam for simple visual questions, remember explicitly provided information, and reply through the laptop speaker.
 
-The project uses:
+## How It Works
 
-- OpenCV for webcam input
-- faster-whisper for speech recognition
-- SmolVLM-256M for image understanding
-- llama.cpp for local model inference
-- pyttsx3 for voice output
-
-The current flow is:
+The interaction flow is:
 
 ```text
-Webcam + Microphone
-        ↓
-Image + Spoken Question
-        ↓
-faster-whisper
-        ↓
-SmolVLM-256M
-        ↓
-Answer
-        ↓
-Laptop Speaker
+Microphone → Speech-to-Text → Assistant → Response → Speaker
+                                  │
+                         ┌────────┴────────┐
+                         │                 │
+                    Visual question   General question
+                         │                 │
+                      Webcam          Llama 3.2 1B
+                         │
+                    SmolVLM-500M
 ```
 
-## Local Model
+The assistant uses lightweight phrase-based routing to distinguish simple visual questions from general conversation.
 
-The prototype is designed to run on a CPU-only laptop with limited memory.
+For visual questions, the current webcam frame and the question are passed to SmolVLM-500M. General questions are handled by Llama 3.2 1B.
 
-SmolVLM-256M is used as a lightweight vision-language model and runs in quantised GGUF format through llama.cpp. A larger vision model was also tested during development, but inference was too slow on the available CPU hardware.
+This lightweight approach keeps response time practical on the CPU-based development hardware.
 
-vLLM is not used in the current version because the development machine does not have a suitable NVIDIA GPU. llama.cpp provides a more practical option for local CPU inference.
+## Models and Tools
+
+- **Speech recognition:** faster-whisper (`small.en`)
+- **Vision:** SmolVLM-500M-Instruct-GGUF
+- **Conversation:** Llama 3.2 1B Instruct GGUF
+- **Local inference:** llama.cpp
+- **Camera:** OpenCV
+- **Speech output:** pyttsx3
+
+The models are downloaded on first use. After the required models are available locally, inference does not require a cloud AI service.
+
+llama.cpp is used because the prototype was developed and tested on a CPU-only Windows laptop with limited memory.
 
 ## Setup
 
-Create a virtual environment:
+### 1. Clone the repository
+
+```powershell
+git clone https://github.com/rominabrz73/laptop-assistant.git
+cd laptop-assistant
+```
+
+### 2. Create and activate a virtual environment
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 
-Install the Python dependencies:
+### 3. Install the Python dependencies
 
 ```powershell
 pip install -r requirements.txt
 ```
 
-Install llama.cpp:
+### 4. Install llama.cpp
+
+On Windows:
 
 ```powershell
 winget install llama.cpp
 ```
 
-The vision model used is:
-
-```text
-ggml-org/SmolVLM-256M-Instruct-GGUF:Q8_0
-```
-
-The model is downloaded automatically on first use.
+The first run may take longer while the required models are downloaded.
 
 ## Run
 
@@ -73,24 +81,51 @@ The model is downloaded automatically on first use.
 python main.py
 ```
 
-When the camera opens:
+When the camera window opens:
 
-- Press `Space` to capture the current view.
-- Ask a question when the system starts listening.
-- The answer will appear in the terminal and be spoken through the laptop speaker.
-- Press `Space` again for another question.
-- Press `ESC` to exit.
+- Press **Space** to talk.
+- Ask a question.
+- The assistant will display and speak its response.
+- Press **Space** again for another question.
+- Press **ESC** to exit.
 
 Example questions:
 
 ```text
-What am I holding?
-What can you see?
-What is in front of the camera?
-What is this?
-What color is this?
+What is Python?
+What is in my hand?
+What colour is this?
+How many objects can you see?
+```
+
+You can also store simple information:
+
+```text
+Remember that my name is Alex.
+```
+
+The assistant keeps a short conversation history and can use saved information when relevant.
+
+## Project Structure
+
+```text
+laptop-assistant/
+├── ai/
+│   ├── assistant.py
+│   ├── chat.py
+│   └── memory.py
+├── camera/
+│   └── webcam.py
+├── speech/
+│   ├── listener.py
+│   └── speaker.py
+├── main.py
+├── requirements.txt
+└── README.md
 ```
 
 ## Limitations
 
-SmolVLM-256M was selected to keep local inference practical on limited hardware. Because it is a small model, it can make mistakes when recognising fine visual details or reading small text.
+This is a lightweight prototype designed for local CPU execution.
+
+Visual understanding is currently intended for simple questions about clearly visible objects, colours, quantities, and basic scene information. Speech and visual accuracy can vary depending on microphone quality, lighting, camera view, and available hardware.

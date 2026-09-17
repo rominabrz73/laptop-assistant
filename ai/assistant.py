@@ -7,7 +7,7 @@ from ai.chat import Chat
 class Assistant:
     def __init__(self):
         self.vision_llama = "llama-mtmd-cli"
-        self.vision_model = "ggml-org/SmolVLM-256M-Instruct-GGUF:Q8_0"
+        self.vision_model = "ggml-org/SmolVLM-500M-Instruct-GGUF"
 
         self.memory = Memory()
         self.chat = Chat()
