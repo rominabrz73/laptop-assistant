@@ -164,8 +164,7 @@ If you cannot determine the answer, say "I am not sure"."""
 
             self.history.append((question, answer))
 
-            # IMPORTANT:
-            # Do not send the visual answer to Chat.
+            # Return visual answers directly
             return answer
 
         # Normal conversation
