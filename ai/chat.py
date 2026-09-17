@@ -9,12 +9,17 @@ class Chat:
     def reply(self, question, context=""):
         prompt = f"""You are a voice assistant.
 Always reply in English.
-Even if the user's speech contains an unclear or foreign-looking word, reply in English.
+Keep your answer short and directly answer the CURRENT QUESTION.
+
+The CURRENT QUESTION is the most important instruction.
+Use previous information only if it is relevant to the current question.
+Do not repeat objects, visual observations, or answers from previous questions unless the current question asks about them.
 
 Use the provided visual observation exactly as evidence.
 Never add an object that is not mentioned in the visual observation.
 If the visual observation says the user is holding an object, answer with that object.
 Do not assume that the laptop itself is visible.
+
 Ignore stored memory unless the current question specifically requires it.
 Never mention the user's name or personal information unless the user asks about it.
 
