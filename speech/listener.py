@@ -8,7 +8,7 @@ from faster_whisper import WhisperModel
 class Listener:
     def __init__(self):
         self.sample_rate = 16000
-        self.model = WhisperModel("base", device="cpu", compute_type="int8")
+        self.model = WhisperModel("small.en", device="cpu", compute_type="int8")
         
 
     def listen(self, seconds=5):
@@ -27,7 +27,12 @@ class Listener:
             write(file.name, self.sample_rate, audio)
             audio_file = file.name
 
-        segments, _ = self.model.transcribe(audio_file)
+        segments, _ = self.model.transcribe(
+            audio_file,
+            language="en",
+            beam_size=5,
+            vad_filter=True,
+        )
 
         text = " ".join(segment.text.strip() for segment in segments)
 
